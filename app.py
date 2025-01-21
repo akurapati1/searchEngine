@@ -6,6 +6,7 @@ from langchain.agents import initialize_agent,AgentType
 from langchain.callbacks import StreamlitCallbackHandler
 import os
 from dotenv import load_dotenv
+from groq import GroqError
 
 ## Arxiv and wikipedia Tools
 arxiv_wrapper=ArxivAPIWrapper(top_k_results=1, doc_content_chars_max=200)
@@ -26,6 +27,19 @@ Try more LangChain 🤝 Streamlit Agent examples at [github.com/langchain-ai/str
 ## Sidebar for settings
 st.sidebar.title("Settings")
 api_key=st.sidebar.text_input("Enter your Groq API Key:",type="password")
+
+if not api_key:
+    st.sidebar.warning("⚠️ Please enter your Groq API key to continue.")
+else:
+    try:
+        # Initialize ChatGroq LLM
+        llm = ChatGroq(groq_api_key=api_key, model_name="Llama3-8b-8192", streaming=True)
+        st.sidebar.success("✅ API Key is valid! Model initialized.")
+    except GroqError as e:
+        st.sidebar.error(f"❌ Error initializing Groq client: {str(e)}")
+        st.sidebar.warning("Possible causes:\n- Invalid or missing API key.\n- Network issues.\n- API rate limits or service downtime.")
+    except Exception as e:
+        st.sidebar.error(f"⚠️ Unexpected Error: {str(e)}")
 
 if "messages" not in st.session_state:
     st.session_state["messages"]=[
