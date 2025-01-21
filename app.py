@@ -50,6 +50,18 @@ for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg['content'])
 
 if prompt:=st.chat_input(placeholder="What is machine learning?"):
+    if not api_key:
+        st.sidebar.warning("⚠️ Please enter your Groq API key to continue.")
+    else:
+        try:
+            # Initialize ChatGroq LLM
+            llm = ChatGroq(groq_api_key=api_key, model_name="Llama3-8b-8192", streaming=True)
+            st.sidebar.success("✅ API Key is valid! Model initialized.")
+        except GroqError as e:
+            st.sidebar.error(f"❌ Error initializing Groq client: {str(e)}")
+            st.sidebar.warning("Possible causes:\n- Invalid or missing API key.\n- Network issues.\n- API rate limits or service downtime.")
+        except Exception as e:
+            st.sidebar.error(f"⚠️ Unexpected Error: {str(e)}")
     st.session_state.messages.append({"role":"user","content":prompt})
     st.chat_message("user").write(prompt)
 
